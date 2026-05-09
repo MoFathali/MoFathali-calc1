@@ -1,3 +1,4 @@
+
 import os
 import telebot
 from telebot import types
@@ -8,7 +9,9 @@ if not TOKEN:
 
 bot = telebot.TeleBot(TOKEN)
 
+OWNER_ID = 1946938561
 
+users = {}
 def main_markup():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("📚 الملخصات")
@@ -25,10 +28,14 @@ def main_markup():
     return markup
 
 
-# ===== /start =====
-
 @bot.message_handler(commands=["start"])
 def start(message):
+
+    user_id = message.from_user.id
+    first_name = message.from_user.first_name
+
+    users[user_id] = first_name
+
     bot.send_message(
         message.chat.id,
         "🎓 أهلاً بك في بوت رياضة 1",
@@ -37,6 +44,21 @@ def start(message):
 
 
 # ===== الملخصات =====
+@bot.message_handler(commands=["users"])
+def users_list(message):
+
+    if message.from_user.id != OWNER_ID:
+        bot.send_message(message.chat.id, "❌ غير مسموح")
+        return
+
+    text = "👥 المستخدمين:\n\n"
+
+    for user_id, name in users.items():
+        text += f"• {name} | {user_id}\n"
+
+    text += f"\n📊 العدد الكلي: {len(users)}"
+
+    bot.send_message(message.chat.id, text)
 
 @bot.message_handler(func=lambda message: message.text == "📚 الملخصات")
 def summaries(message):
