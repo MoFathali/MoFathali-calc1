@@ -249,7 +249,7 @@ def about(message):
     )
 
 
-@bot.message_handler(func=lambda m: True)
+@bot.message_handler(func=lambda m: m.text and not m.text.startswith("/"))
 def fallback(message):
     bot.send_message(
         message.chat.id,
