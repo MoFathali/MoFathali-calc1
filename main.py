@@ -247,7 +247,21 @@ def about(message):
         "وإن شاء الله نكون افدتكم 🤍",
         reply_markup=main_markup(),
     )
+@bot.message_handler(commands=["users"])
+def users_list(message):
 
+    if message.from_user.id != OWNER_ID:
+        bot.send_message(message.chat.id, "❌ غير مسموح")
+        return
+
+    text = "👥 المستخدمين:\n\n"
+
+    for user_id, name in users.items():
+        text += f"• {name} | {user_id}\n"
+
+    text += f"\n📊 العدد الكلي: {len(users)}"
+
+    bot.send_message(message.chat.id, text)
 
 @bot.message_handler(func=lambda m: m.text and not m.text.startswith("/"))
 def fallback(message):
