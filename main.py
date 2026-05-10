@@ -367,7 +367,7 @@ def users_list(message):
     if message.from_user.id != OWNER_ID:
         bot.send_message(message.chat.id, "❌ غير مسموح")
         return
-
+    print(users)
     text = "👥 المستخدمين:\n\n"
 
     for user_id, name in users.items():
