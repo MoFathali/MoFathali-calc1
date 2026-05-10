@@ -1,4 +1,3 @@
-
 import os
 import telebot
 from telebot import types
@@ -44,21 +43,7 @@ def start(message):
 
 
 # ===== الملخصات =====
-@bot.message_handler(commands=["users"])
-def users_list(message):
 
-    if message.from_user.id != OWNER_ID:
-        bot.send_message(message.chat.id, "❌ غير مسموح")
-        return
-
-    text = "👥 المستخدمين:\n\n"
-
-    for user_id, name in users.items():
-        text += f"• {name} | {user_id}\n"
-
-    text += f"\n📊 العدد الكلي: {len(users)}"
-
-    bot.send_message(message.chat.id, text)
 
 @bot.message_handler(func=lambda message: message.text == "📚 الملخصات")
 def summaries(message):
@@ -194,13 +179,142 @@ def go_back(message):
 
 # ===== الأقسام الأخرى =====
 
+quiz_questions = [
+
+    {
+        "question": "📘 إذا كانت f(x)=3x²+2x-5 فما قيمة f'(2) ؟",
+        "options": ["10", "12", "14", "16"],
+        "answer": "14"
+    },
+
+    {
+        "question": "📗 أوجد مشتقة:\nf(x)=sin(x)+x²",
+        "options": ["cos(x)+2x", "sin(x)+2x", "cos(x)+x²", "2sin(x)"],
+        "answer": "cos(x)+2x"
+    },
+
+    {
+        "question": "📙 احسب:\nsin²(30°)+cos²(30°)",
+        "options": ["0", "1", "2", "1/2"],
+        "answer": "1"
+    }
+    ,
+{
+    "question": "📕 مشتقة tan(x) تساوي؟",
+    "options": ["sec²(x)", "cos(x)", "csc²(x)", "tan²(x)"],
+    "answer": "sec²(x)"
+},
+
+{
+    "question": "📐 أوجد ميل المستقيم المار بالنقطتين:\n(2,3) و (6,11)",
+    "options": ["1", "2", "3", "4"],
+    "answer": "2"
+},
+
+{
+    "question": "➡️ إذا كان المتجه A=(6,8)\nفما مقداره؟",
+    "options": ["8", "10", "12", "14"],
+    "answer": "10"
+}
+]
+
+user_score = {}
+user_question = {}
+
+
 @bot.message_handler(func=lambda m: m.text == "🧠 الكويزات")
 def quizzes(message):
+
+    user_id = message.from_user.id
+
+    user_score[user_id] = 0
+    user_question[user_id] = 0
+
     bot.send_message(
         message.chat.id,
-        "🧠 الكويزات\n\nهذا القسم فارغ حالياً.",
-        reply_markup=main_markup(),
+        "🧠 قبل ما تبدأ الكويز:\n\n"
+        "📄 هات ورقة وقلم\n"
+        "🧠 ركّز كويس\n"
+        "⏳ وحاول تجاوب بدون غش 😄"
     )
+
+    send_question(message.chat.id, user_id)
+
+
+def send_question(chat_id, user_id):
+
+    q_index = user_question[user_id]
+
+    if q_index >= len(quiz_questions):
+
+        score = user_score[user_id]
+
+        if score == len(quiz_questions):
+            rating = "🔥 وحش رياضيات"
+
+        elif score >= 2:
+            rating = "👏 ممتاز جدًا"
+
+        elif score >= 1:
+            rating = "👍 جيد لكن راجع أكثر"
+
+        else:
+            rating = "📚 يحتاج مراجعة قبل الامتحان"
+
+        bot.send_message(
+            chat_id,
+            f"🏁 انتهى الكويز!\n\n📊 نتيجتك: {score}/{len(quiz_questions)}\n\n{rating}",
+            reply_markup=main_markup()
+        )
+
+        return
+
+    q = quiz_questions[q_index]
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    for option in q["options"]:
+        markup.add(types.KeyboardButton(option))
+
+    markup.add(types.KeyboardButton("🔙 رجوع"))
+
+    bot.send_message(
+        chat_id,
+        q["question"],
+        reply_markup=markup
+    )
+
+
+@bot.message_handler(func=lambda m: True)
+def check_answer(message):
+
+    user_id = message.from_user.id
+
+    if user_id not in user_question:
+        return
+
+    q_index = user_question[user_id]
+    q = quiz_questions[q_index]
+
+    if message.text == q["answer"]:
+
+        user_score[user_id] += 1
+
+        bot.send_message(
+            message.chat.id,
+            "✅ إجابة صحيحة"
+        )
+
+    else:
+
+        bot.send_message(
+            message.chat.id,
+            f"❌ إجابة خاطئة\n\n✅ الإجابة الصحيحة: {q['answer']}"
+        )
+
+    user_question[user_id] += 1
+
+    send_question(message.chat.id, user_id)
 
 
 @bot.message_handler(func=lambda m: m.text == "البوتات الخاصة بنا 🤖")
@@ -262,6 +376,32 @@ def users_list(message):
     text += f"\n📊 العدد الكلي: {len(users)}"
 
     bot.send_message(message.chat.id, text)
+
+
+@bot.message_handler(commands=["broadcast"])
+def broadcast(message):
+
+    if message.from_user.id != OWNER_ID:
+        bot.send_message(message.chat.id, "❌ غير مسموح")
+        return
+
+    msg = message.text.replace("/broadcast ","")
+
+    sent = 0
+
+    for user_id in users:
+
+        try:
+            bot.send_message(user_id, f"📢 رسالة من الإدارة:\n\n{msg}")
+            sent += 1
+
+        except:
+            pass
+
+    bot.send_message(
+        message.chat.id,
+        f"✅ تم إرسال الرسالة إلى {sent} مستخدم"
+    )
 
 @bot.message_handler(func=lambda m: m.text and not m.text.startswith("/"))
 def fallback(message):
