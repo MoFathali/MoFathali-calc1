@@ -285,7 +285,7 @@ def send_question(chat_id, user_id):
     )
 
 
-@bot.message_handler(func=lambda m: True)
+@bot.message_handler(func=lambda m: m.from_user.id in user_question)
 def check_answer(message):
 
     user_id = message.from_user.id
