@@ -293,6 +293,26 @@ def check_answer(message):
     if user_id not in user_question:
         return
 
+    if message.text in [
+        "🔙 رجوع",
+        "📚 الملخصات",
+        "البوتات الخاصة بنا 🤖",
+        "نصائح قبل الامتحان📆",
+        "📝 أسئلة امتحانات سابقة",
+        "ℹ️ حول البوت",
+        "/start"
+    ]:
+
+        user_question.pop(user_id, None)
+        user_score.pop(user_id, None)
+
+        bot.send_message(
+            message.chat.id,
+            "🏠 تم الخروج من الكويز",
+            reply_markup=main_markup()
+        )
+        return
+
     q_index = user_question[user_id]
     q = quiz_questions[q_index]
 
