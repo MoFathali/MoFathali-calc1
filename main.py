@@ -345,6 +345,7 @@ def our_bots(message):
         "🖥️ بوت مادة تنظيم الحاسبات\n@coccttbot\n\n"
         "💡 بوت مادة الأنظمة الرقمية\n@digitalccttbot\n\n"
         "📐 بوت مادة الرياضة 1\n@Calc1CCTTbot\n\n"
+        "💻 بوت شرح لغة C\n@C_CCTT_bot\n\n"
         "⏳ انتظروا بقية المواد ...\n\n"
         "——————————————\n"
         "🏢 حسيبات تيك | Hisabat Tech",
